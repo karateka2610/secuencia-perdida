@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Secuencia Perdida - Juego de lógica y patrones matemáticos. Desafía tu mente completando secuencias numéricas y alfabéticas.">
+    <meta name="keywords" content="juego, lógica, matemáticas, patrones, secuencias, fibonacci, números primos">
+    <meta name="author" content="Secuencia Perdida Game">
+    
+    <!-- Preload de fuentes críticas -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    
+    <!-- Font Awesome Icons -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    
+    <!-- Estilos principales -->
+    <link rel="stylesheet" href="css/styles.css">
+    
+    <title>Secuencia Perdida - Juego de Lógica Profesional</title>
+    
+    <!-- Favicon y iconos -->
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🧩</text></svg>">
+</head>
+<body>
+    <!-- Header principal -->
+    <header class="header" role="banner">
+        <h1>
+            <i class="fas fa-puzzle-piece" aria-hidden="true"></i>
+            Secuencia Perdida
+        </h1>
+    </header>
+    
+    <!-- Contenedor principal del juego -->
+    <main class="game-container" role="main">
+        <!-- Barra de estadísticas -->
+        <section class="stats-bar" role="region" aria-label="Estadísticas del juego">
+            <div class="stat" role="group" aria-label="Nivel actual">
+                <span class="stat-value" id="level" aria-live="polite">1</span>
+                <span class="stat-label">Nivel</span>
+            </div>
+            <div class="stat" role="group" aria-label="Puntuación total">
+                <span class="stat-value" id="score" aria-live="polite">0</span>
+                <span class="stat-label">Puntos</span>
+            </div>
+            <div class="stat" role="group" aria-label="Racha de aciertos">
+                <span class="stat-value" id="streak" aria-live="polite">0</span>
+                <span class="stat-label">Racha</span>
+            </div>
+            <div class="stat" role="group" aria-label="Pistas disponibles">
+                <span class="stat-value" id="hints-left" aria-live="polite">3</span>
+                <span class="stat-label">Pistas</span>
+            </div>
+        </section>
+        
+        <!-- Área principal del juego -->
+        <section id="game-area" class="game-area" role="region" aria-label="Área de juego">
+            <!-- Contenedor de la secuencia -->
+            <div class="sequence-container" role="group" aria-label="Secuencia matemática">
+                <div class="sequence-grid" id="sequence-grid" role="grid" aria-label="Elementos de la secuencia">
+                    <!-- Los elementos de la secuencia se generan dinámicamente -->
+                </div>
+            </div>
+            
+            <!-- Indicador de vidas -->
+            <div class="life-indicator" id="lives" role="group" aria-label="Vidas restantes">
+                <div class="life-dot" role="img" aria-label="Vida disponible"></div>
+                <div class="life-dot" role="img" aria-label="Vida disponible"></div>
+                <div class="life-dot" role="img" aria-label="Vida disponible"></div>
+            </div>
+            
+            <!-- Sección de entrada de respuesta -->
+            <section class="input-section" role="region" aria-label="Área de respuesta">
+                <div class="input-container">
+                    <label for="answer-input" class="sr-only">Ingresa tu respuesta para completar la secuencia</label>
+                    <input 
+                        type="text" 
+                        id="answer-input" 
+                        placeholder="Tu respuesta" 
+                        maxlength="10"
+                        autocomplete="off"
+                        aria-describedby="feedback"
+                        aria-label="Campo de respuesta"
+                    >
+                    <button 
+                        class="btn btn-primary" 
+                        onclick="checkAnswer()" 
+                        type="button"
+                        aria-label="Enviar respuesta"
+                    >
+                        <i class="fas fa-check" aria-hidden="true"></i>
+                        <span></span>
+                    </button>
+                </div>
+            </section>
+            
+            <!-- Área de retroalimentación -->
+            <div 
+                class="feedback" 
+                id="feedback" 
+                role="status" 
+                aria-live="polite" 
+                aria-atomic="true"
+            ></div>
+            
+            <!-- Botones de acción -->
+            <div class="action-buttons" role="group" aria-label="Acciones del juego">
+                <button 
+                    class="btn btn-secondary" 
+                    onclick="showHint()" 
+                    type="button"
+                    aria-label="Obtener una pista para la secuencia actual"
+                >
+                    <i class="fas fa-lightbulb" aria-hidden="true"></i>
+                    <span>Pista</span>
+                </button>
+                <button 
+                    class="btn btn-secondary" 
+                    onclick="generateNewSequence()" 
+                    type="button"
+                    aria-label="Generar una nueva secuencia"
+                >
+                    <i class="fas fa-refresh" aria-hidden="true"></i>
+                    <span>Nueva</span>
+                </button>
+                <button 
+                    class="btn btn-secondary" 
+                    id="audio-toggle" 
+                    onclick="toggleAudio()" 
+                    type="button"
+                    aria-label="Activar o desactivar el audio del juego"
+                >
+                    <i class="fas fa-volume-up" aria-hidden="true"></i>
+                    <span class="sr-only">Audio</span>
+                </button>
+            </div>
+        </section>
+    </main>
+    
+    <!-- Modal de fin de juego -->
+    <div id="game-over-modal" class="game-over-modal hidden" role="dialog" aria-modal="true" aria-labelledby="game-over-title">
+        <div class="modal-content">
+            <h2 id="game-over-title">
+                <i class="fas fa-flag-checkered" aria-hidden="true"></i>
+                ¡Juego Terminado!
+            </h2>
+            <div class="final-stats" role="region" aria-label="Estadísticas finales">
+                <div class="final-stat">
+                    <span>
+                        <i class="fas fa-layer-group" aria-hidden="true"></i>
+                        Nivel alcanzado:
+                    </span>
+                    <span id="final-level" aria-live="polite">1</span>
+                </div>
+                <div class="final-stat">
+                    <span>
+                        <i class="fas fa-star" aria-hidden="true"></i>
+                        Puntuación final:
+                    </span>
+                    <span id="final-score" aria-live="polite">0</span>
+                </div>
+                <div class="final-stat">
+                    <span>
+                        <i class="fas fa-fire" aria-hidden="true"></i>
+                        Mejor racha:
+                    </span>
+                    <span id="best-streak" aria-live="polite">0</span>
+                </div>
+            </div>
+            <button 
+                class="btn btn-primary" 
+                onclick="restartGame()" 
+                type="button"
+                aria-label="Reiniciar el juego desde el inicio"
+            >
+                <i class="fas fa-play" aria-hidden="true"></i>
+                <span>Jugar de Nuevo</span>
+            </button>
+        </div>
+    </div>
+    
+    <!-- Toast para notificaciones -->
+    <div id="toast" class="toast" role="alert" aria-live="assertive"></div>
+    
+    <!-- Texto oculto para lectores de pantalla -->
+    <div class="sr-only">
+        <p id="game-instructions">
+            Secuencia Perdida es un juego de lógica donde debes identificar patrones matemáticos.
+            Observa la secuencia presentada, identifica el patrón, e ingresa el número o letra faltante.
+            Tienes 3 vidas y 3 pistas para toda la partida. ¡Buena suerte!
+        </p>
+    </div>
+    
+    <!-- Scripts del juego -->
+    <script src="js/audio.js"></script>
+    <script src="js/game.js"></script>
+    
+    <!-- Script de inicialización -->
+    <script>
+        // Mejorar accesibilidad y UX
+        document.addEventListener('DOMContentLoaded', function() {
+            // Focus automático en el input al cargar
+            const answerInput = document.getElementById('answer-input');
+            if (answerInput) {
+                answerInput.focus();
+            }
+            
+            // Mejorar navegación por teclado
+            document.addEventListener('keydown', function(e) {
+                // ESC para cerrar modal
+                if (e.key === 'Escape') {
+                    const modal = document.getElementById('game-over-modal');
+                    if (modal && !modal.classList.contains('hidden')) {
+                        modal.classList.add('hidden');
+                    }
+                }
+                
+                // Shortcuts de teclado
+                if (e.ctrlKey || e.metaKey) {
+                    switch(e.key) {
+                        case 'h':
+                            e.preventDefault();
+                            showHint();
+                            break;
+                        case 'n':
+                            e.preventDefault();
+                            generateNewSequence();
+                            break;
+                        case 'm':
+                            e.preventDefault();
+                            toggleAudio();
+                            break;
+                    }
+                }
+            });
+            
+            // Añadir indicadores de carga
+            window.addEventListener('beforeunload', function() {
+                document.body.classList.add('loading');
+            });
+        });
+    </script>
+    
+    <!-- Añadir clase sr-only para accesibilidad -->
+    <style>
+        .sr-only {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            padding: 0;
+            margin: -1px;
+            overflow: hidden;
+            clip: rect(0, 0, 0, 0);
+            white-space: nowrap;
+            border: 0;
+        }
+        
+        .game-area {
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: var(--space-xl);
+        }
+        
+        /* Estado de carga */
+        body.loading {
+            cursor: wait;
+        }
+        
+        body.loading * {
+            pointer-events: none;
+        }
+    </style>
+</body>
+</html>
